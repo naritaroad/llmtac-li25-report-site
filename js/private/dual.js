@@ -27,7 +27,7 @@
 import * as prefs from '../ui/prefs.js';
 
 const CHANNEL = 'msgraph-dual';
-const SYNC_PREFS = ['sync', 'live', 'swap', 'split'];
+const SYNC_PREFS = ['sync', 'live', 'eqopen', 'swap', 'split'];
 const LOCAL_KEYS = { l: 'lang', t: 'theme', p: 'big' };
 const ROOTS = '#cover, #article, #thanks, #site-footer';
 const DYNAMIC = '.eq-live, .lv, .model3d > *, [data-dual-ghost]';   // drawn late or by state: not an anchor
@@ -80,7 +80,10 @@ function setRoleAttr() {
 }
 {
   const st = document.createElement('style');
-  st.textContent = 'html[data-dual="follow"] :is(#settings-btn, #settings, #hud-timer, #hud-reset) { display: none !important; }';
+  st.textContent = `
+    html[data-dual="follow"] :is(#settings-btn, #settings, #hud-timer, #hud-reset, .priv-nav) { display: none !important; }
+    /* the Report / Script / Q&A switch is styled in js/private/presenter-nav.css */
+  `;
   document.head.append(st);
 }
 
@@ -772,8 +775,35 @@ function frame() {
   requestAnimationFrame(frame);
 }
 
+function initPrivNav() {
+  // The private build writes the switch into index.html (tools/build.py PRIVATE_NAV); make one only if it is missing.
+  let nav = document.querySelector('.priv-nav');
+  if (!nav) {
+    nav = document.createElement('nav');
+    nav.className = 'priv-nav';
+    nav.setAttribute('data-presenter-nav', '');
+    nav.setAttribute('aria-label', 'Presenter pages');
+    nav.innerHTML = `<a class="priv-nav-btn" data-priv-link="index" href="index.html#kp00" aria-current="page"><span class="en" lang="en">Report</span><span class="zh" lang="zh-Hant">報告</span></a>`
+      + `<a class="priv-nav-btn" data-priv-link="script" href="script.html#kp00"><span class="en" lang="en">Script</span><span class="zh" lang="zh-Hant">講稿</span></a>`
+      + `<a class="priv-nav-btn" data-priv-link="qa" href="qa.html#kp00"><span class="en" lang="en">Q&amp;A</span><span class="zh" lang="zh-Hant">提問</span></a>`;
+    document.body.prepend(nav);
+  }
+  nav.setAttribute('data-dual', 'local');
+  const sync = (id) => {
+    const k = /^kp\d\d$/.test(id || '') ? id : (S()?.nav?.currentKp?.id || 'kp00');
+    nav.dataset.kp = k;
+    nav.querySelector('[data-priv-link="index"]')?.setAttribute('href', `#${k}`);
+    nav.querySelector('[data-priv-link="script"]')?.setAttribute('href', `script.html#${k}`);
+    nav.querySelector('[data-priv-link="qa"]')?.setAttribute('href', `qa.html#${k}`);
+  };
+  S()?.nav?.onChange((kp) => sync(kp?.id));
+  window.addEventListener('hashchange', () => sync(location.hash.slice(1)));
+  sync(location.hash.slice(1));
+}
+
 function boot() {
   if (!S()?.nav) { setTimeout(boot, 120); return; }
+  initPrivNav();
   wrapStage();
   window.addEventListener('keydown', onKey, true);
   for (const type of BLOCKED) window.addEventListener(type, blockInput, { capture: true, passive: false });

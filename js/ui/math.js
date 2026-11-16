@@ -328,7 +328,7 @@ export const valTex = (key, tex) => `\\htmlData{sym=${key}, val=1}{${tex}}`;
 
 // ───────────────────────────── typesetting
 
-const kpOf = (el) => el.closest?.('section.kp')?.id || el.closest?.('[data-kp-scope]')?.dataset.kpScope || '';
+export const kpOf = (el) => el?.closest?.('section.kp')?.id || el?.closest?.('[data-kp-scope]')?.dataset.kpScope || '';
 
 export function renderTex(el, tex, katex = window.katex, { display = isDisplay(el), kp = kpOf(el), tag = true, numbers = true } = {}) {
   if (!katex) { el.textContent = tex; return false; }
@@ -345,17 +345,6 @@ export function renderTex(el, tex, katex = window.katex, { display = isDisplay(e
 }
 
 export function typeset(root = document, katex = window.katex) {
-  // Keep the explanation close to its equation while leaving the printed formula visible.
-  for (const el of root.querySelectorAll('table.sym, .steps[data-eq]')) {
-    if (el.parentElement?.classList.contains('math-details')) continue;
-    const details = document.createElement('details');
-    details.className = 'math-details';
-    const summary = document.createElement('summary');
-    summary.innerHTML = el.matches('table')
-      ? '<span class="en">Symbols and values</span><span class="zh">符號與數值</span>'
-      : '<span class="en">Worked steps</span><span class="zh">代入步驟</span>';
-    el.before(details); details.append(summary, el);
-  }
   const list = [...(root.matches?.('[data-tex]') ? [root] : []), ...root.querySelectorAll('[data-tex]')];
   for (const el of list) renderTex(el, el.dataset.tex, katex);
   for (const el of list) if (el.matches('.eq-body, .eq-inline')) watch(el);
@@ -376,20 +365,26 @@ function fit(el) {
   el.removeAttribute('aria-label');
   const room = el.clientWidth;
   if (!room) return;
+  const fig = el.closest?.('figure.eq');
+  const faceKey = `${room}:${fig?.dataset.face || ''}`;
   let need = el.scrollWidth;
-  if (el.closest('.eq-live-figure')) {
-    if (need > room + 1 || el.scrollHeight > el.clientHeight + 1) {
-      if (need > room + 1) el.classList.add('is-scroll');
-      el.tabIndex = 0;
-      el.setAttribute('aria-label', document.documentElement.lang === 'zh-Hant' ? '公式，可捲動' : 'Formula, scrollable');
-    }
-    else el.removeAttribute('tabindex');
-    return;
+  let scale = need <= room + 1 ? 1 : Math.max(MIN_SCALE, Math.floor((room / need) * 100) / 100 - 0.01);
+  if (el.__faceKey === faceKey && typeof el.__minScale === 'number') {
+    scale = Math.min(scale, el.__minScale);
+  } else {
+    el.__faceKey = faceKey;
+    el.__lockedH = 0;
   }
-  if (need <= room + 1) return;
-  const scale = Math.max(MIN_SCALE, Math.floor((room / need) * 100) / 100 - 0.01);
-  el.style.fontSize = `${parseFloat(getComputedStyle(el).fontSize) * scale}px`;
-  need = el.scrollWidth;
+  el.__minScale = scale;
+  if (scale < 1) {
+    el.style.fontSize = `${parseFloat(getComputedStyle(el).fontSize) * scale}px`;
+    need = el.scrollWidth;
+  }
+  const h = el.offsetHeight;
+  if (h > 0) {
+    el.__lockedH = Math.max(el.__lockedH || 0, h);
+    el.style.minHeight = `${el.__lockedH}px`;
+  }
   if (need <= room + 1) return;
   el.classList.add('is-scroll');
   el.tabIndex = 0;
@@ -418,7 +413,15 @@ function watch(el) {
 
 /** Refit everything, e.g. after the text size or the split changed. */
 export function refit(root = document) {
-  root.querySelectorAll('.eq-body, .eq-inline').forEach((el) => { if (widths.has(el)) fit(el); });
+  root.querySelectorAll('.eq-body, .eq-inline').forEach((el) => {
+    if (widths.has(el)) {
+      el.__faceKey = null;
+      el.__minScale = null;
+      el.__lockedH = 0;
+      el.style.minHeight = '';
+      fit(el);
+    }
+  });
 }
 /** Refit one block after its content changed. */
 export function refitOne(el) { if (widths.has(el)) fit(el); else watch(el); }

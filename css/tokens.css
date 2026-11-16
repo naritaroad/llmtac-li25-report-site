@@ -69,8 +69,6 @@
   --gear-yellow: #E8A917;
   --gear-blue: #1F6FD0;
   --part-white: #E9E7E1;
-  --figure-paper: #FBFCFE;   /* the paper image's light background, including in dark mode */
-  --figure-ink: #33415A;
   --chip-ink: #0B1220;       /* text on a gear-coloured chip: dark in both themes, the fills do not change */
 
   /* ── evidence tags (text / background) ── */

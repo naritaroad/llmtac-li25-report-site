@@ -204,7 +204,7 @@ export async function mount(el, ctx = {}) {
           <span class="w-field"><span>${bi('Names', '名稱')}</span>${seg('names', state.names, [['strict', bi('strict', '嚴格')], ['colourblind', bi('colour-blind', '不看顏色')]])}</span>
         </div>
         <div class="readouts w-reads-lg">${big('triple', 'Triple')}${big('pair', 'Pair')}${big('action', 'Action')}</div>
-        <p class="w-note">${bi('Recall is the share of ground-truth triples hit under the chosen matching rule.', 'Recall 是依所選比對規則命中的標準答案占比。')}</p>
+        <p class="w-formula" data-wtex="R@k=\\frac{\\#\\,\\text{GT triples hit under key }k}{\\#\\,\\text{GT triples}},\\qquad mR@k=\\frac{1}{M}\\sum_{m=1}^{M}R_m@k">R@k = hits under key k / number of GT triples;  mR@k = mean of R@k over M tasks</p>
         ${altNote}
         <div class="w-scroll"><table class="w-table w-match">
           <caption>${bi(`${esc(run.model)} (${esc(run.served || '')}), ${run.variant === 'with_base' ? 'with' : 'without'} Base Searcher, run ${run.run}: ${x.n_pred} predicted triples against ${x.n_gt} ground-truth triples`,
@@ -212,8 +212,8 @@ export async function mount(el, ctx = {}) {
           <thead><tr><th>#</th><th>${bi('Predicted triple', '預測的 triple')}</th><th>${bi('Against', '對上')}</th><th>@T</th><th>@P</th><th>@A</th><th>${bi('Why', '原因')}</th></tr></thead>
           <tbody>${rowsHtml}</tbody></table></div>
         ${missing ? `<div class="w-missing"><h4>${bi(`Ground-truth triples not hit at @Triple (${x.missing.length})`, `@Triple 沒被命中的標準答案（${x.missing.length} 條）`)}</h4><ul>${missing}</ul></div>` : ''}
-        <p class="w-note">${tag('Derived')} ${bi('The paper defines R and mR in one sentence and prints no formula (p.5–6). Keys: @Triple = subject, relation, object; @Pair = subject and object, in that direction; @Action = relation plus the two objects in either direction.',
-          '論文只用一句話定義 R 與 mR，沒有印公式（p.5–6）。比對鍵：@Triple 是主詞、關係、受詞全對；@Pair 是主詞與受詞（方向要對）；@Action 是關係詞加兩個物件（不分方向）。')}</p>
+        <p class="w-note">${tag('Derived')} ${bi('The paper defines R and mR in one sentence and prints no formula (p.5–6). These two lines are our reading. Keys: @Triple = subject, relation, object; @Pair = subject and object, in that direction; @Action = relation plus the two objects in either direction.',
+          '論文只用一句話定義 R 與 mR，沒有印公式（p.5–6）。這兩行是我們的讀法。比對鍵：@Triple 是主詞、關係、受詞全對；@Pair 是主詞與受詞（方向要對）；@Action 是關係詞加兩個物件（不分方向）。')}</p>
         <p class="w-note">${bi('This is R for one task (one photo). mR needs several tasks. We have one, so there is no mR here.', '這是一個任務（一張照片）的 R。mR 要多個任務取平均；我們只有一個任務，所以沒有 mR。')}</p>
         <div class="readouts w-reads-sm">
           <div class="readout"><small>${bi('Extra triples', '多輸出的條數')}</small><output>${x.extras}</output><span class="w-frac">${x.n_pred} − ${x.hits.triple} <i>${bi('predicted − hits', '預測 − 命中')}</i></span></div>

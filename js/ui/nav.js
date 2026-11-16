@@ -72,8 +72,7 @@ export function createNav({ stage, bus }) {
 
   // ── sticky offsets, measured: CSS reads them as variables ──
   function measure() {
-    const stickyOffset = mainline ? parseFloat(getComputedStyle(mainline).top) || 0 : 0;
-    const mh = Math.round((mainline?.getBoundingClientRect().height || 0) + stickyOffset);
+    const mh = Math.round(mainline?.getBoundingClientRect().height || 0);
     root.style.setProperty('--mainline-h', `${mh}px`);
     let top = mh;
     if (mqOne.matches && stage.size() !== 'full') top += Math.round(stageEl.getBoundingClientRect().height);

@@ -48,7 +48,6 @@
 | --- | --- | --- | --- | --- |
 | `fig1.jpg`…`fig7.jpg` | 論文圖 1–7 的整張圖 | Li, Yan, Wang, Gao, *Robotics and Computer-Integrated Manufacturing* 94 (2025) 102978，https://doi.org/10.1016/j.rcim.2025.102978 | © Elsevier，保留所有權利 | 正文不再直接引用整張；只當作裁切的來源 |
 | `crops/*.jpg`（13 張） | 圖 1、3、7 的照片與機器人畫面，圖 2 輸入的組裝圖，圖 4 上半與圖 6 的工程圖 | 自上列整張圖裁切 | 同上。課堂報告中為評論與說明而部分引用，每張圖說都標出處 | KP01–KP10 的 `.fig-crops` 與重繪圖裡的照片格 |
-| `crops/fig4_product1.png` … `fig4_product5.png` | Product1–5 的原圖對照 | 圖 4 第 5 頁下半。裁切與去背步驟見 `tools/crop_fig4_products.py` | © Elsevier，局部引用 | KP04 五個 3D 模型的右上角 |
 
 流程圖、prompt、triple 表改用 HTML 重繪，框裡的字照抄原圖（短的引文）；Product1–5 與滾珠螺桿改用程式重建的 3D（見上一節）。
 
